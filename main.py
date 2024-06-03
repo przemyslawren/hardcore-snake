@@ -1,4 +1,3 @@
-import pygame as pg
 from game_objects import *
 import sys
 
@@ -26,9 +25,11 @@ class Game:
     def new_game(self):
         self.snake = Snake(self)
         self.food = Food(self)
+        self.obstacles = Obstacle(self)
 
     def update(self):
         self.snake.update()
+        self.obstacles.check_collision(self.snake.rect)
         pg.display.flip()
         self.clock.tick(60)
 
@@ -38,6 +39,7 @@ class Game:
         self.draw_grid()
         self.food.draw()
         self.snake.draw()
+        self.obstacles.draw()
 
     def check_event(self):
         for event in pg.event.get():
