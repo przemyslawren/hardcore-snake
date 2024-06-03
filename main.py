@@ -21,6 +21,19 @@ class Game:
         self.TILE_SIZE = 50
         self.screen = pg.display.set_mode([self.WINDOW_SIZE] * 2)
         self.clock = pg.time.Clock()
+        self.background_image = pg.image.load('assets/images/grass.jpg')
+        self.background_image = pg.transform.scale(self.background_image, (self.WINDOW_SIZE, self.WINDOW_SIZE))
+
+        # Load background music
+        pg.mixer.music.load('assets/sounds/game-level-sound.wav')
+        pg.mixer.music.set_volume(0.2)
+        pg.mixer.music.play(-1)  # Play the music in a loop
+
+        # Load sound effects
+        self.eat_sound = pg.mixer.Sound('assets/sounds/eat-sound.wav')
+        self.collision_sound = pg.mixer.Sound('assets/sounds/cry-sound.wav')
+        self.collision_sound.set_volume(1)
+
         self.best_score = load_best_score()
         self.new_game()
 
@@ -43,6 +56,8 @@ class Game:
 
     def update(self):
         self.snake.update()
+        if any(obstacle.colliderect(self.snake.rect) for obstacle in self.obstacles.rects):
+            self.collision_sound.play()
         self.obstacles.check_collision(self.snake.rect)
         if self.snake.score > self.best_score:
             self.best_score = self.snake.score
@@ -51,7 +66,7 @@ class Game:
         self.clock.tick(60)
 
     def draw(self):
-        self.screen.fill('black')
+        self.screen.blit(self.background_image, (0,0))
         self.draw_score()
         self.draw_grid()
         self.food.draw()
@@ -70,6 +85,7 @@ class Game:
             self.check_event()
             self.update()
             self.draw()
+
 
     def save_best_score(self):
         with open('best_score.txt', 'w') as file:

@@ -3,13 +3,11 @@ from random import randrange
 
 vec2 = pg.math.Vector2
 
-
 def get_random_position(size, window_size, exclude_positions):
     while True:
         pos = [randrange(size // 2, window_size - size // 2, size), randrange(size // 2, window_size - size // 2, size)]
         if pos not in exclude_positions:
             return pos
-
 
 class Snake:
     def __init__(self, game):
@@ -25,6 +23,10 @@ class Snake:
         self.segments = [self.rect.copy()]
         self.directions = {pg.K_w: 1, pg.K_s: 1, pg.K_a: 1, pg.K_d: 1}
         self.score = 0
+        self.head_image = pg.image.load('assets/images/head.png')
+        self.head_image = pg.transform.scale(self.head_image, (self.size, self.size))
+        self.body_image = pg.image.load('assets/images/body.png')
+        self.body_image = pg.transform.scale(self.body_image, (self.size, self.size))
 
     def control(self, event):
         if event.type == pg.KEYDOWN:
@@ -54,11 +56,13 @@ class Snake:
     def check_food(self):
         if self.rect.center == self.game.food.rect.center:
             self.game.food.rect.center = self.game.food.get_random_position()
+            self.game.eat_sound.play()
             self.length += 1
             self.score += 10
 
     def check_self_eating(self):
         if len(self.segments) != len(set(segment.center for segment in self.segments)):
+            self.game.collision_sound.play()
             self.game.new_game()
 
     def get_random_position(self):
@@ -69,15 +73,18 @@ class Snake:
 
     def check_borders(self):
         if self.rect.left < 0 or self.rect.right > self.game.WINDOW_SIZE:
+            self.game.collision_sound.play()
             self.game.new_game()
         if self.rect.top < 0 or self.rect.bottom > self.game.WINDOW_SIZE:
+            self.game.collision_sound.play()
             self.game.new_game()
 
     def move(self):
         if self.delta_time():
             self.rect.move_ip(self.direction)
-            self.segments.append(self.rect.copy())
-            self.segments = self.segments[-self.length:]
+            self.segments.insert(0, self.rect.copy())
+            if len(self.segments) > self.length:
+                self.segments.pop()
 
     def update(self):
         self.check_self_eating()
@@ -86,7 +93,11 @@ class Snake:
         self.move()
 
     def draw(self):
-        [pg.draw.rect(self.game.screen, 'green', segment) for segment in self.segments]
+        for i, segment in enumerate(self.segments):
+            if i == 0:
+                self.game.screen.blit(self.head_image, segment)
+            else:
+                self.game.screen.blit(self.body_image, segment)
 
 
 class Food:
@@ -95,6 +106,8 @@ class Food:
         self.size = game.TILE_SIZE
         self.rect = pg.rect.Rect([0, 0, game.TILE_SIZE - 2, game.TILE_SIZE - 2])
         self.rect.center = self.get_random_position()
+        self.image = pg.image.load('assets/images/food.png')
+        self.image = pg.transform.scale(self.image, (self.size, self.size))
 
     def get_random_position(self):
         exclude_positions = [segment.center for segment in self.game.snake.segments]
@@ -103,7 +116,7 @@ class Food:
         return get_random_position(self.size, self.game.WINDOW_SIZE, exclude_positions)
 
     def draw(self):
-        pg.draw.rect(self.game.screen, 'red', self.rect)
+        self.game.screen.blit(self.image, self.rect)
 
 
 class Obstacle:
@@ -115,6 +128,8 @@ class Obstacle:
         self.positions = [self.get_random_position() for _ in range(num_obstacles)]
         for rect, pos in zip(self.rects, self.positions):
             rect.center = pos
+        self.image = pg.image.load('assets/images/stone.png')
+        self.image = pg.transform.scale(self.image, (self.size, self.size))
 
     def get_random_position(self):
         exclude_positions = [segment.center for segment in self.game.snake.segments]
@@ -124,7 +139,7 @@ class Obstacle:
 
     def draw(self):
         for rect in self.rects:
-            pg.draw.rect(self.game.screen, 'blue', rect)
+            self.game.screen.blit(self.image, rect)
 
     def check_collision(self, snake_rect):
         for rect in self.rects:
