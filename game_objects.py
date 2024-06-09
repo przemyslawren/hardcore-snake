@@ -3,11 +3,13 @@ from random import randrange
 
 vec2 = pg.math.Vector2
 
+
 def get_random_position(size, window_size, exclude_positions):
     while True:
         pos = [randrange(size // 2, window_size - size // 2, size), randrange(size // 2, window_size - size // 2, size)]
         if pos not in exclude_positions:
             return pos
+
 
 class Snake:
     def __init__(self, game):

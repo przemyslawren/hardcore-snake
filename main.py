@@ -44,15 +44,15 @@ class Game:
         self.screen.blit(best_score_surface, (self.WINDOW_SIZE - best_score_surface.get_width() - 10, 10))
 
     def draw_grid(self):
-        [pg.draw.line(self.screen, [50] * 3, (x, 0), (x, self.WINDOW_SIZE))
-         for x in range(0, self.WINDOW_SIZE, self.TILE_SIZE)]
-        [pg.draw.line(self.screen, [50] * 3, (0, y), (self.WINDOW_SIZE, y))
-         for y in range(0, self.WINDOW_SIZE, self.TILE_SIZE)]
+        for x in range(0, self.WINDOW_SIZE, self.TILE_SIZE):
+            pg.draw.line(self.screen, [50] * 3, (x, 0), (x, self.WINDOW_SIZE))
+        for y in range(0, self.WINDOW_SIZE, self.TILE_SIZE):
+            pg.draw.line(self.screen, [50] * 3, (0, y), (self.WINDOW_SIZE, y))
 
     def new_game(self):
         self.snake = Snake(self)
-        self.food = Food(self)
         self.obstacles = Obstacle(self)
+        self.food = Food(self)
 
     def update(self):
         self.snake.update()
@@ -63,15 +63,15 @@ class Game:
             self.best_score = self.snake.score
             self.save_best_score()
         pg.display.flip()
-        self.clock.tick(60)
+        self.clock.tick(120)
 
     def draw(self):
-        self.screen.blit(self.background_image, (0,0))
+        self.screen.blit(self.background_image, (0, 0))
         self.draw_score()
         self.draw_grid()
+        self.obstacles.draw()
         self.food.draw()
         self.snake.draw()
-        self.obstacles.draw()
 
     def check_event(self):
         for event in pg.event.get():
@@ -85,7 +85,6 @@ class Game:
             self.check_event()
             self.update()
             self.draw()
-
 
     def save_best_score(self):
         with open('best_score.txt', 'w') as file:
