@@ -40,4 +40,4 @@
     <li><code>best_score.txt</code>: Plik przechowujący najlepszy wynik.</li>
 </ul>
 
-<h2>Ostrzegam gra jest bardzo uzależniająca, miłej zabawy!</h2>
+<h2>Ostrzegam gra jest bardzo uzależniająca, miłej zabawy! <br/> Spróbuj pobić mój rekord 😁</h2>
